@@ -4,7 +4,7 @@ A simple library to manage logs using winston to syslog.
 
 ## Documentation
 
-:blue_book:file:///home/doug/git/github/lett-log/docs
+:blue_book: [https://lettdigital.github.io/lett-log/docs](https://lettdigital.github.io/lett-log/docs/)
 
 ## Connection
 
