@@ -1,6 +1,10 @@
 # lett-log
 
-A log lib to send logs to elastic logs
+A simple library to manage logs using winston to syslog.
+
+## Documentation
+
+:blue_book:file:///home/doug/git/github/lett-log/docs
 
 ## Connection
 
