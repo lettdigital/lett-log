@@ -3,7 +3,6 @@ const moment = require('moment');
 const winston = require('winston');
 require('winston-syslog').Syslog;
 
-const ENV = process.env.NODE_ENV;
 const SYSLOG_HOST = process.env.SYSLOG_HOST;
 const SYSLOG_PROTOCOL = process.env.SYSLOG_PROTOCOL;
 const SYSLOG_PORT = process.env.SYSLOG_PORT;
@@ -70,6 +69,15 @@ class Log {
      */
     setDefaultMeta(defaultMeta) {
         this.defaultMeta = defaultMeta;
+    }
+
+    /**
+     * @deprecated
+     * @description Override default metadata object
+     * @param {Object} defaultMeta A default metadata to send on every log
+     */
+    setParams(defaultMeta) {
+        this.setDefaultMeta(defaultMeta);
     }
 
     /**
