@@ -11,7 +11,7 @@ const SYSLOG_PATH = process.env.SYSLOG_PATH;
 const SYSLOG_APP_NAME = process.env.APP_NAME;
 
 const { format } = require('winston');
-const { combine, label, printf, prettyPrint } = format;
+const { combine, label, printf, timestamp, colorize } = format;
 
 const myFormat = printf(log => {
     return (
@@ -45,9 +45,16 @@ class Log {
             format: combine(label({ label: appName || SYSLOG_APP_NAME }), myFormat),
             transports: [
                 new winston.transports.Console({
-                    colorize: true,
-                    timestamp: true,
-                    format: combine(prettyPrint()),
+                    format: combine(
+                        colorize(),
+                        timestamp(),
+                        printf(({ message, timestamp, level }) => {
+                            const metadata = JSON.parse(message.substring(message.indexOf('[METADATA]')).replace('[METADATA]', ''));
+                            const text = message.substring(5, message.indexOf('[METADATA]'));
+                            const ts = timestamp.slice(0, 19).replace('T', ' ');
+                            return `${ts} ${level}: ${text} ${Object.keys(metadata).length ? JSON.stringify(metadata, null, 2) : ''}\n`;
+                        }),
+                    ),
                 }),
                 new winston.transports.Syslog({
                     host: host || SYSLOG_HOST,
