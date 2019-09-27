@@ -61,15 +61,23 @@ class Log {
             ],
         });
 
-        this.setParams(defaultMeta);
+        this.setDefaultMeta(defaultMeta);
     }
 
     /**
-     * @description Merge object into current metadata
+     * @description Override default metadata object
      * @param {Object} defaultMeta A default metadata to send on every log
      */
-    setParams(defaultMeta) {
-        this.defaultMeta = _.merge(defaultMeta, { ENV });
+    setDefaultMeta(defaultMeta) {
+        this.defaultMeta = defaultMeta;
+    }
+
+    /**
+     * @description Assing new properties to metadata object and override if already exists one or more properties
+     * @param {Object} defaultMeta A default metadata to bind
+     */
+    assingToDefaultMeta(defaultMeta) {
+        Object.assign(this.defaultMeta, defaultMeta);
     }
 
     /**
@@ -86,7 +94,7 @@ class Log {
 
     /**
      * @description Log level error - priority 0
-     * @param {String} msg A message which will be not indexed by elastic
+     * @param {String|Object} msg A message which will be not indexed by elastic or a error object to be stringified
      * @param {Object} metadata A JSON which will be indexed by elastic
      * @param {Boolean} toError Automatic parse error object to string
      */
