@@ -1,12 +1,14 @@
 # lett-log
 
-A simple library to manage logs using winston to syslog.
+A simple library to manage logs using winston and syslog.
 
 ## Documentation
 
 :blue_book: [https://lettdigital.github.io/lett-log/docs](https://lettdigital.github.io/lett-log/docs/)
 
-## Connection
+## Setup
+
+### Connection
 
 There is two ways to set a connection, the **first one always override de second one**!
 
@@ -38,11 +40,28 @@ const log = new Log({
 }
 ```
 
-## Log level
+## How to use
+
+### Log level
+
+There are 4 log levels:
 ```
 0 - error
 1 - warn
-2 - alert
-3 - info
-4 - debug
+2 - info
+3 - debug
 ```
+
+Let's explain each one:
+1. :x: **error**: A crash application error.
+  - Example: `Missing required environment variable`
+2. :warning: **warn**: A error with no side effects
+  - Example: `The image downalod failed`
+3. :information_source: **info**: Informations about application lifecycle
+  - Example: `Express successfully started`
+4. :large_blue_diamond: **debug**: Other informations meaningful
+  - Example: `Running query on database`
+
+### Log paramenters
+
+Checkout the full documentation
