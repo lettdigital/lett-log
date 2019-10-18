@@ -23,6 +23,21 @@ const myFormat = printf(log => {
     }[METADATA]${JSON.stringify(logParsed.metadata)}`;
 });
 
+const myCustomLevels = {
+    levels: {
+        error: 0,
+        warning: 1,
+        info: 2,
+        debug: 3,
+    },
+    colors: {
+        error: 'red',
+        warning: 'yellow',
+        info: 'green',
+        debug: 'blue',
+    },
+};
+
 /**
  * @class
  * @author Douglas Eleutério <douglaseleuterio@lett.digital>
@@ -40,9 +55,9 @@ class Log {
     /**
      * @constructor
      */
-    constructor(defaultMeta = {}, { appName = '', host = '', protocol = '', port = 0, facility = '', path = '' } = {}) {
+        winston.addColors(myCustomLevels.colors);
         this.logger = winston.createLogger({
-            levels: winston.config.syslog.levels,
+            levels: myCustomLevels.levels,
             level: 'debug',
             format: combine(label({ label: appName || SYSLOG_APP_NAME }), myFormat),
             transports: [
