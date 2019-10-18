@@ -1,5 +1,3 @@
-const _ = require('lodash');
-const moment = require('moment');
 const winston = require('winston');
 require('winston-syslog').Syslog;
 
@@ -14,11 +12,15 @@ const { format } = require('winston');
 const { combine, label, printf, timestamp, colorize } = format;
 
 const myFormat = printf(log => {
-    return (
-        moment()
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss,SSSZ') + `[${log.level.toUpperCase()}][${log.label}]:${log.message}`
-    );
+    // Date format = YYYY-MM-DD HH:mm:ss,SSSZ
+    const isoDate = new Date()
+        .toISOString()
+        .replace('T', ' ')
+        .replace('.', ',');
+    const logParsed = JSON.parse(log.message);
+    return `${isoDate}[${log.level.toUpperCase()}][${log.label}]:[MSG](${logParsed.namespace})${logParsed.msg} (ERROR)=${
+        logParsed.stackTrace
+    }[METADATA]${JSON.stringify(logParsed.metadata)}`;
 });
 
 /**
