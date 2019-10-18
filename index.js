@@ -69,12 +69,25 @@ class Log {
                 new winston.transports.Console({
                     format: combine(
                         colorize(),
-                        timestamp(),
-                        printf(({ message, timestamp, level }) => {
-                            const metadata = JSON.parse(message.substring(message.indexOf('[METADATA]')).replace('[METADATA]', ''));
-                            const text = message.substring(5, message.indexOf('[METADATA]'));
-                            const ts = timestamp.slice(0, 19).replace('T', ' ');
-                            return `${ts} ${level}: ${text} ${Object.keys(metadata).length ? JSON.stringify(metadata, null, 2) : ''}\n`;
+                        timestampWinston(),
+                        printf(({ message, timestamp: timestampFromWinston, level }) => {
+                            const ts = timestampFromWinston.slice(0, 19).replace('T', ' ');
+                            const log = JSON.parse(message);
+
+                            const backgroundWhite = '\x1b[47m';
+                            const foregroundBlack = '\x1b[30m';
+                            const foregroundMagenta = '\x1b[35m';
+                            const foregroundCyan = '\x1b[36m';
+                            const brightStyle = '\x1b[1m';
+                            const resetLogStyle = '\x1b[0m';
+
+                            return `${timestamp ? `[${ts}]` : ''}${brightStyle}[${level} @ ${log.namespace}]:${backgroundWhite}${foregroundBlack}${
+                                log.msg
+                            }${resetLogStyle}${
+                                Object.keys(log.metadata).length
+                                    ? `\n${foregroundCyan}[METADATA]${resetLogStyle}${JSON.stringify(log.metadata, null, 2)}`
+                                    : ''
+                            }${log.stackTrace ? `\n${foregroundMagenta}[STACKTRACE]${resetLogStyle}${log.stackTrace}` : ''}`;
                         }),
                     ),
                 }),
