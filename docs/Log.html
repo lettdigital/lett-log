@@ -358,7 +358,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line42">line 42</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line58">line 58</a>
     </li></ul></dd>
     
 
@@ -414,7 +414,7 @@
     
 
     
-    <h4 class="name" id="alert"><span class="type-signature"></span>alert<span class="signature">(msg, metadata)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="assingToDefaultMeta"><span class="type-signature"></span>assingToDefaultMeta<span class="signature">(defaultMeta)</span><span class="type-signature"></span></h4>
     
 
     
@@ -422,7 +422,7 @@
 
 
 <div class="description">
-    Log level alert - priority 2
+    Assing new properties to metadata object and override if already exists one or more properties
 </div>
 
 
@@ -458,30 +458,7 @@
 
         <tr>
             
-                <td class="name"><code>msg</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">A message which will be not indexed by elastic</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>metadata</code></td>
+                <td class="name"><code>defaultMeta</code></td>
             
 
             <td class="type">
@@ -497,7 +474,7 @@
 
             
 
-            <td class="description last">A JSON which will be indexed by elastic</td>
+            <td class="description last">A default metadata to bind</td>
         </tr>
 
     
@@ -538,7 +515,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line115">line 115</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line129">line 129</a>
     </li></ul></dd>
     
 
@@ -574,7 +551,7 @@
     
 
     
-    <h4 class="name" id="debug"><span class="type-signature"></span>debug<span class="signature">(msg, metadata)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="debug"><span class="type-signature"></span>debug<span class="signature">(type, namespace, msg, metadata<span class="signature-attributes">opt</span>, stackTrace<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -582,7 +559,7 @@
 
 
 <div class="description">
-    Log level debug - priority 4
+    Log level debug - priority 3
 </div>
 
 
@@ -606,6 +583,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -614,6 +593,68 @@
     </thead>
 
     <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">A log level</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>namespace</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The log namespace</td>
+        </tr>
+
     
 
         <tr>
@@ -631,10 +672,18 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">A message which will be not indexed by elastic</td>
+            <td class="description last">A message like a commit</td>
         </tr>
 
     
@@ -654,10 +703,53 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">A JSON which will be indexed by elastic</td>
+            <td class="description last">A JSON data with important information to find logs</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>stackTrace</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Error</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">An error stack</td>
         </tr>
 
     
@@ -698,7 +790,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line133">line 133</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line210">line 210</a>
     </li></ul></dd>
     
 
@@ -734,7 +826,7 @@
     
 
     
-    <h4 class="name" id="error"><span class="type-signature"></span>error<span class="signature">(msg, metadata, toError)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="error"><span class="type-signature"></span>error<span class="signature">(type, namespace, msg, metadata<span class="signature-attributes">opt</span>, stackTrace<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -766,6 +858,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -774,6 +868,68 @@
     </thead>
 
     <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">A log level</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>namespace</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The log namespace</td>
+        </tr>
+
     
 
         <tr>
@@ -791,10 +947,18 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">A message which will be not indexed by elastic</td>
+            <td class="description last">A message like a commit</td>
         </tr>
 
     
@@ -814,33 +978,53 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">A JSON which will be indexed by elastic</td>
+            <td class="description last">A JSON data with important information to find logs</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>toError</code></td>
+                <td class="name"><code>stackTrace</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type">Error</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">Automatic parse error object to string</td>
+            <td class="description last">An error stack</td>
         </tr>
 
     
@@ -881,7 +1065,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line93">line 93</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line174">line 174</a>
     </li></ul></dd>
     
 
@@ -917,7 +1101,7 @@
     
 
     
-    <h4 class="name" id="info"><span class="type-signature"></span>info<span class="signature">(msg, metadata)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="info"><span class="type-signature"></span>info<span class="signature">(type, namespace, msg, metadata<span class="signature-attributes">opt</span>, stackTrace<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -925,7 +1109,7 @@
 
 
 <div class="description">
-    Log level info - priority 3
+    Log level info - priority 2
 </div>
 
 
@@ -949,6 +1133,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -957,6 +1143,68 @@
     </thead>
 
     <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">A log level</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>namespace</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The log namespace</td>
+        </tr>
+
     
 
         <tr>
@@ -974,10 +1222,18 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">A message which will be not indexed by elastic</td>
+            <td class="description last">A message like a commit</td>
         </tr>
 
     
@@ -997,10 +1253,53 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">A JSON which will be indexed by elastic</td>
+            <td class="description last">A JSON data with important information to find logs</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>stackTrace</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Error</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">An error stack</td>
         </tr>
 
     
@@ -1041,7 +1340,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line124">line 124</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line198">line 198</a>
     </li></ul></dd>
     
 
@@ -1077,7 +1376,7 @@
     
 
     
-    <h4 class="name" id="log"><span class="type-signature"></span>log<span class="signature">(msg, metadata)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="setDefaultMeta"><span class="type-signature"></span>setDefaultMeta<span class="signature">(defaultMeta)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1085,167 +1384,7 @@
 
 
 <div class="description">
-    Log level log
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>msg</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">A message which will be not indexed by elastic</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>metadata</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">A JSON which will be indexed by elastic</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line142">line 142</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="setParams"><span class="type-signature"></span>setParams<span class="signature">(defaultMeta)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Merge object into current metadata
+    Override default metadata object
 </div>
 
 
@@ -1338,7 +1477,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line71">line 71</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line112">line 112</a>
     </li></ul></dd>
     
 
@@ -1374,7 +1513,7 @@
     
 
     
-    <h4 class="name" id="show"><span class="type-signature"></span>show<span class="signature">(type, msg, metadata)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="setParams"><span class="type-signature"></span>setParams<span class="signature">(defaultMeta)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1382,7 +1521,7 @@
 
 
 <div class="description">
-    A generic log function
+    Override default metadata object
 </div>
 
 
@@ -1418,53 +1557,7 @@
 
         <tr>
             
-                <td class="name"><code>type</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">A log level</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>msg</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">A message which will be not indexed by elastic</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>metadata</code></td>
+                <td class="name"><code>defaultMeta</code></td>
             
 
             <td class="type">
@@ -1480,7 +1573,7 @@
 
             
 
-            <td class="description last">A JSON which will be indexed by elastic</td>
+            <td class="description last">A default metadata to send on every log</td>
         </tr>
 
     
@@ -1509,6 +1602,8 @@
     
 
     
+        <dt class="important tag-deprecated">Deprecated:</dt><dd class="yes-def tag-deprecated"><ul class="dummy"><li>Yes</li></ul></dd>
+    
 
     
 
@@ -1521,7 +1616,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line81">line 81</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line121">line 121</a>
     </li></ul></dd>
     
 
@@ -1658,7 +1753,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line152">line 152</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line220">line 220</a>
     </li></ul></dd>
     
 
@@ -1716,7 +1811,7 @@
     
 
     
-    <h4 class="name" id="warn"><span class="type-signature"></span>warn<span class="signature">(msg, metadata)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="warn"><span class="type-signature"></span>warn<span class="signature">(type, namespace, msg, metadata<span class="signature-attributes">opt</span>, stackTrace<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1748,6 +1843,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -1756,6 +1853,68 @@
     </thead>
 
     <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">A log level</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>namespace</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The log namespace</td>
+        </tr>
+
     
 
         <tr>
@@ -1773,10 +1932,18 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">A message which will be not indexed by elastic</td>
+            <td class="description last">A message like a commit</td>
         </tr>
 
     
@@ -1796,10 +1963,53 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">A JSON which will be indexed by elastic</td>
+            <td class="description last">A JSON data with important information to find logs</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>stackTrace</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Error</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">An error stack</td>
         </tr>
 
     
@@ -1840,7 +2050,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line106">line 106</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line186">line 186</a>
     </li></ul></dd>
     
 
@@ -1892,7 +2102,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Sep 25 2019 21:21:13 GMT-0300 (Brasilia Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Oct 18 2019 17:59:10 GMT-0300 (Brasilia Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -26,12 +26,9 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const _ = require('lodash');
-const moment = require('moment');
-const winston = require('winston');
+            <pre class="prettyprint source linenums"><code>const winston = require('winston');
 require('winston-syslog').Syslog;
 
-const ENV = process.env.NODE_ENV;
 const SYSLOG_HOST = process.env.SYSLOG_HOST;
 const SYSLOG_PROTOCOL = process.env.SYSLOG_PROTOCOL;
 const SYSLOG_PORT = process.env.SYSLOG_PORT;
@@ -40,15 +37,34 @@ const SYSLOG_PATH = process.env.SYSLOG_PATH;
 const SYSLOG_APP_NAME = process.env.APP_NAME;
 
 const { format } = require('winston');
-const { combine, label, printf, prettyPrint } = format;
+const { combine, label, printf, timestamp: timestampWinston, colorize } = format;
 
 const myFormat = printf(log => {
-    return (
-        moment()
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss,SSSZ') + `[${log.level.toUpperCase()}][${log.label}]:${log.message}`
-    );
+    // Date format = YYYY-MM-DD HH:mm:ss,SSSZ
+    const isoDate = new Date()
+        .toISOString()
+        .replace('T', ' ')
+        .replace('.', ',');
+    const logParsed = JSON.parse(log.message);
+    return `${isoDate}[${log.level.toUpperCase()}][${log.label}]:[MSG](${logParsed.namespace})${logParsed.msg} (ERROR)=${
+        logParsed.stackTrace
+    }[METADATA]${JSON.stringify(logParsed.metadata)}`;
 });
+
+const myCustomLevels = {
+    levels: {
+        error: 0,
+        warning: 1,
+        info: 2,
+        debug: 3,
+    },
+    colors: {
+        error: 'red',
+        warning: 'yellow',
+        info: 'green',
+        debug: 'blue',
+    },
+};
 
 /**
  * @class
@@ -67,16 +83,41 @@ class Log {
     /**
      * @constructor
      */
-    constructor(defaultMeta = {}, { appName = '', host = '', protocol = '', port = 0, facility = '', path = '' } = {}) {
+    constructor(defaultMeta = {}, { appName = '', host = '', protocol = '', port = 0, facility = '', path = '', timestamp = false } = {}) {
+        if (!appName &amp;&amp; !SYSLOG_APP_NAME) {
+            throw 'No appName or environment variable SYSLOG_APP_NAME defined';
+        }
+
+        winston.addColors(myCustomLevels.colors);
         this.logger = winston.createLogger({
-            levels: winston.config.syslog.levels,
+            levels: myCustomLevels.levels,
             level: 'debug',
             format: combine(label({ label: appName || SYSLOG_APP_NAME }), myFormat),
             transports: [
                 new winston.transports.Console({
-                    colorize: true,
-                    timestamp: true,
-                    format: combine(prettyPrint()),
+                    format: combine(
+                        colorize(),
+                        timestampWinston(),
+                        printf(({ message, timestamp: timestampFromWinston, level }) => {
+                            const ts = timestampFromWinston.slice(0, 19).replace('T', ' ');
+                            const log = JSON.parse(message);
+
+                            const backgroundWhite = '\x1b[47m';
+                            const foregroundBlack = '\x1b[30m';
+                            const foregroundMagenta = '\x1b[35m';
+                            const foregroundCyan = '\x1b[36m';
+                            const brightStyle = '\x1b[1m';
+                            const resetLogStyle = '\x1b[0m';
+
+                            return `${timestamp ? `[${ts}]` : ''}${brightStyle}[${level} @ ${log.namespace}]:${backgroundWhite}${foregroundBlack}${
+                                log.msg
+                            }${resetLogStyle}${
+                                Object.keys(log.metadata).length
+                                    ? `\n${foregroundCyan}[METADATA]${resetLogStyle}${JSON.stringify(log.metadata, null, 2)}`
+                                    : ''
+                            }${log.stackTrace ? `\n${foregroundMagenta}[STACKTRACE]${resetLogStyle}${log.stackTrace}` : ''}`;
+                        }),
+                    ),
                 }),
                 new winston.transports.Syslog({
                     host: host || SYSLOG_HOST,
@@ -89,86 +130,113 @@ class Log {
             ],
         });
 
-        this.setParams(defaultMeta);
+        this.setDefaultMeta(defaultMeta);
     }
 
     /**
-     * @description Merge object into current metadata
+     * @description Override default metadata object
+     * @param {Object} defaultMeta A default metadata to send on every log
+     */
+    setDefaultMeta(defaultMeta) {
+        this.defaultMeta = defaultMeta;
+    }
+
+    /**
+     * @deprecated
+     * @description Override default metadata object
      * @param {Object} defaultMeta A default metadata to send on every log
      */
     setParams(defaultMeta) {
-        this.defaultMeta = _.merge(defaultMeta, { ENV });
+        this.setDefaultMeta(defaultMeta);
     }
 
     /**
-     * @description A generic log function
-     * @param {String} type A log level
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
+     * @description Assing new properties to metadata object and override if already exists one or more properties
+     * @param {Object} defaultMeta A default metadata to bind
      */
-    show(type, msg, metadata) {
-        let meta = metadata || {};
-        if (this.defaultMeta) meta = _.merge(meta, this.defaultMeta);
-        this.logger.log(type, `[MSG]${msg} [METADATA]${JSON.stringify(meta)}`);
+    assingToDefaultMeta(defaultMeta) {
+        Object.assign(this.defaultMeta, defaultMeta);
+    }
+
+    /**
+     * @description A generic log function to handle all possible logs
+     * @private
+     * @param {String} type A log level
+     * @param {String} namespace The log namespace
+     * @param {String} msg A message like a commit
+     * @param {Object=} metadata A JSON data with important information to find logs
+     * @param {Error=} stackTrace An error stack
+     */
+    static show({ namespace, type, msg, metadata = {}, stackTrace }) {
+        if (!namespace) {
+            throw 'namespace is a required argumment';
+        }
+        if (!type) {
+            throw 'type is a required argumment';
+        }
+        if (!msg) {
+            throw 'msg is a required argumment';
+        }
+        if (metadata &amp;&amp; typeof metadata !== 'object') {
+            throw 'metadata argumment must be an object';
+        }
+        let errEvent = undefined;
+        if (stackTrace) {
+            errEvent = this.toError(stackTrace);
+        }
+
+        const meta = {};
+        Object.assign(meta, this.defaultMeta, metadata || {});
+
+        this.logger.log(type, JSON.stringify({ msg, namespace, metadata: meta, stackTrace: errEvent }));
     }
 
     /**
      * @description Log level error - priority 0
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
-     * @param {Boolean} toError Automatic parse error object to string
+     * @param {String} type A log level
+     * @param {String} namespace The log namespace
+     * @param {String} msg A message like a commit
+     * @param {Object=} metadata A JSON data with important information to find logs
+     * @param {Error=} stackTrace An error stack
      */
-    error(msg, metadata, toError) {
-        let stringMsg = msg;
-        if (toError) {
-            stringMsg = this.toError(msg);
-        }
-        this.show('error', stringMsg, metadata);
+    error({ namespace, msg, metadata, stackTrace }) {
+        this.show({ type: 'error', msg, namespace, metadata, stackTrace });
     }
 
     /**
      * @description Log level warn - priority 1
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
+     * @param {String} type A log level
+     * @param {String} namespace The log namespace
+     * @param {String} msg A message like a commit
+     * @param {Object=} metadata A JSON data with important information to find logs
+     * @param {Error=} stackTrace An error stack
      */
-    warn(msg, metadata) {
-        this.show('warning', msg, metadata);
+    warn({ namespace, msg, metadata, stackTrace }) {
+        this.show({ type: 'warning', namespace, msg, metadata, stackTrace });
     }
 
     /**
-     * @description Log level alert - priority 2
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
+     * @description Log level info - priority 2
+     * @param {String} type A log level
+     * @param {String} namespace The log namespace
+     * @param {String} msg A message like a commit
+     * @param {Object=} metadata A JSON data with important information to find logs
+     * @param {Error=} stackTrace An error stack
      */
-    alert(msg, metadata) {
-        this.show('alert', msg, metadata);
+    info({ namespace, msg, metadata, stackTrace }) {
+        this.show({ type: 'info', namespace, msg, metadata, stackTrace });
     }
 
     /**
-     * @description Log level info - priority 3
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
+     * @description Log level debug - priority 3
+     * @param {String} type A log level
+     * @param {String} namespace The log namespace
+     * @param {String} msg A message like a commit
+     * @param {Object=} metadata A JSON data with important information to find logs
+     * @param {Error=} stackTrace An error stack
      */
-    info(msg, metadata) {
-        this.show('info', msg, metadata);
-    }
-
-    /**
-     * @description Log level debug - priority 4
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
-     */
-    debug(msg, metadata) {
-        this.show('debug', msg, metadata);
-    }
-
-    /**
-     * @description Log level log
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
-     */
-    log(msg, metadata) {
-        this.show('log', msg, metadata);
+    debug({ namespace, msg, metadata, stackTrace }) {
+        this.show({ type: 'debug', namespace, msg, metadata, stackTrace });
     }
 
     /**
@@ -199,7 +267,7 @@ module.exports = Log;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Sep 25 2019 21:21:13 GMT-0300 (Brasilia Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Oct 18 2019 17:59:10 GMT-0300 (Brasilia Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
