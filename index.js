@@ -9,7 +9,7 @@ const SYSLOG_PATH = process.env.SYSLOG_PATH;
 const SYSLOG_APP_NAME = process.env.APP_NAME;
 
 const { format } = require('winston');
-const { combine, label, printf, timestamp, colorize } = format;
+const { combine, label, printf, timestamp: timestampWinston, colorize } = format;
 
 const myFormat = printf(log => {
     // Date format = YYYY-MM-DD HH:mm:ss,SSSZ
@@ -131,74 +131,84 @@ class Log {
     }
 
     /**
-     * @description A generic log function
+     * @description A generic log function to handle all possible logs
+     * @private
      * @param {String} type A log level
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
+     * @param {String} namespace The log namespace
+     * @param {String} msg A message like a commit
+     * @param {Object=} metadata A JSON data with important information to find logs
+     * @param {Error=} stackTrace An error stack
      */
-    show(type, msg, metadata) {
-        let meta = metadata || {};
-        if (this.defaultMeta) meta = _.merge(meta, this.defaultMeta);
-        this.logger.log(type, `[MSG]${msg} [METADATA]${JSON.stringify(meta)}`);
+    static show({ namespace, type, msg, metadata = {}, stackTrace }) {
+        if (!namespace) {
+            throw 'namespace is a required argumment';
+        }
+        if (!type) {
+            throw 'type is a required argumment';
+        }
+        if (!msg) {
+            throw 'msg is a required argumment';
+        }
+        if (metadata && typeof metadata !== 'object') {
+            throw 'metadata argumment must be an object';
+        }
+        let errEvent = undefined;
+        if (stackTrace) {
+            errEvent = this.toError(stackTrace);
+        }
+
+        const meta = {};
+        Object.assign(meta, this.defaultMeta, metadata || {});
+
+        this.logger.log(type, JSON.stringify({ msg, namespace, metadata: meta, stackTrace: errEvent }));
     }
 
     /**
      * @description Log level error - priority 0
-     * @param {String|Object} msg A message which will be not indexed by elastic or a error object to be stringified
-     * @param {Object} metadata A JSON which will be indexed by elastic
-     * @param {Boolean} toError Automatic parse error object to string
+     * @param {String} type A log level
+     * @param {String} namespace The log namespace
+     * @param {String} msg A message like a commit
+     * @param {Object=} metadata A JSON data with important information to find logs
+     * @param {Error=} stackTrace An error stack
      */
-    error(msg, metadata, toError) {
-        let stringMsg = msg;
-        if (toError) {
-            stringMsg = this.toError(msg);
-        }
-        this.show('error', stringMsg, metadata);
+    error({ namespace, msg, metadata, stackTrace }) {
+        this.show({ type: 'error', msg, namespace, metadata, stackTrace });
     }
 
     /**
      * @description Log level warn - priority 1
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
+     * @param {String} type A log level
+     * @param {String} namespace The log namespace
+     * @param {String} msg A message like a commit
+     * @param {Object=} metadata A JSON data with important information to find logs
+     * @param {Error=} stackTrace An error stack
      */
-    warn(msg, metadata) {
-        this.show('warning', msg, metadata);
+    warn({ namespace, msg, metadata, stackTrace }) {
+        this.show({ type: 'warning', namespace, msg, metadata, stackTrace });
     }
 
     /**
-     * @description Log level alert - priority 2
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
+     * @description Log level info - priority 2
+     * @param {String} type A log level
+     * @param {String} namespace The log namespace
+     * @param {String} msg A message like a commit
+     * @param {Object=} metadata A JSON data with important information to find logs
+     * @param {Error=} stackTrace An error stack
      */
-    alert(msg, metadata) {
-        this.show('alert', msg, metadata);
+    info({ namespace, msg, metadata, stackTrace }) {
+        this.show({ type: 'info', namespace, msg, metadata, stackTrace });
     }
 
     /**
-     * @description Log level info - priority 3
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
+     * @description Log level debug - priority 3
+     * @param {String} type A log level
+     * @param {String} namespace The log namespace
+     * @param {String} msg A message like a commit
+     * @param {Object=} metadata A JSON data with important information to find logs
+     * @param {Error=} stackTrace An error stack
      */
-    info(msg, metadata) {
-        this.show('info', msg, metadata);
-    }
-
-    /**
-     * @description Log level debug - priority 4
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
-     */
-    debug(msg, metadata) {
-        this.show('debug', msg, metadata);
-    }
-
-    /**
-     * @description Log level log
-     * @param {String} msg A message which will be not indexed by elastic
-     * @param {Object} metadata A JSON which will be indexed by elastic
-     */
-    log(msg, metadata) {
-        this.show('log', msg, metadata);
+    debug({ namespace, msg, metadata, stackTrace }) {
+        this.show({ type: 'debug', namespace, msg, metadata, stackTrace });
     }
 
     /**
