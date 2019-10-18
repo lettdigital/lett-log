@@ -139,7 +139,7 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    static show({ namespace, type, msg, metadata = {}, stackTrace }) {
+    show({ namespace, type, msg, metadata = {}, stackTrace }) {
         if (!namespace) {
             throw 'namespace is a required argumment';
         }
