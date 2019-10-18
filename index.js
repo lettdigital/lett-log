@@ -55,6 +55,11 @@ class Log {
     /**
      * @constructor
      */
+    constructor(defaultMeta = {}, { appName = '', host = '', protocol = '', port = 0, facility = '', path = '', timestamp = false } = {}) {
+        if (!appName && !SYSLOG_APP_NAME) {
+            throw 'No appName or environment variable SYSLOG_APP_NAME defined';
+        }
+
         winston.addColors(myCustomLevels.colors);
         this.logger = winston.createLogger({
             levels: myCustomLevels.levels,
