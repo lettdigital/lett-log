@@ -18,9 +18,9 @@ const myFormat = printf(log => {
         .replace('T', ' ')
         .replace('.', ',');
     const logParsed = JSON.parse(log.message);
-    return `${isoDate}[${log.level.toUpperCase()}][${log.label}]:[MSG](${logParsed.namespace})${logParsed.msg} (ERROR)=${
-        logParsed.stackTrace
-    }[METADATA]${JSON.stringify(logParsed.metadata)}`;
+    return `${isoDate}[${log.level.toUpperCase()}][${log.label}]:[MSG](${logParsed.namespace})${logParsed.msg} (ARGS)=${JSON.stringify(
+        logParsed.args,
+    )}(ERROR)=${logParsed.stackTrace}[METADATA]${JSON.stringify(logParsed.metadata)}`;
 });
 
 const myCustomLevels = {
@@ -84,6 +84,17 @@ class Log {
                             return `${timestamp ? `[${ts}]` : ''}${brightStyle}[${level} @ ${log.namespace}]:${backgroundWhite}${foregroundBlack}${
                                 log.msg
                             }${resetLogStyle}${
+                                log.args && Object.keys(log.args).length
+                                    ? Object.keys(log.args)
+                                          .map(
+                                              key =>
+                                                  `\n${foregroundCyan}(${key})${resetLogStyle}=${
+                                                      typeof log.args[key] === 'object' ? JSON.stringify(log.args[key], null, 2) : log.args[key]
+                                                  }`,
+                                          )
+                                          .join('')
+                                    : ''
+                            }${
                                 Object.keys(log.metadata).length
                                     ? `\n${foregroundCyan}[METADATA]${resetLogStyle}${JSON.stringify(log.metadata, null, 2)}`
                                     : ''
@@ -139,7 +150,7 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    show({ namespace, type, msg, metadata = {}, stackTrace }) {
+    show({ namespace, type, msg, metadata = {}, stackTrace, args }) {
         if (!namespace) {
             throw 'namespace is a required argumment';
         }
@@ -160,7 +171,7 @@ class Log {
         const meta = {};
         Object.assign(meta, this.defaultMeta, metadata || {});
 
-        this.logger.log(type, JSON.stringify({ msg, namespace, metadata: meta, stackTrace: errEvent }));
+        this.logger.log(type, JSON.stringify({ msg, namespace, metadata: meta, stackTrace: errEvent, args }));
     }
 
     /**
@@ -171,8 +182,8 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    error({ namespace, msg, metadata, stackTrace }) {
-        this.show({ type: 'error', msg, namespace, metadata, stackTrace });
+    error({ namespace, msg, metadata, stackTrace, ...args }) {
+        this.show({ type: 'error', msg, namespace, metadata, stackTrace, args });
     }
 
     /**
@@ -183,8 +194,8 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    warn({ namespace, msg, metadata, stackTrace }) {
-        this.show({ type: 'warning', namespace, msg, metadata, stackTrace });
+    warn({ namespace, msg, metadata, stackTrace, ...args }) {
+        this.show({ type: 'warning', namespace, msg, metadata, stackTrace, args });
     }
 
     /**
@@ -195,8 +206,8 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    info({ namespace, msg, metadata, stackTrace }) {
-        this.show({ type: 'info', namespace, msg, metadata, stackTrace });
+    info({ namespace, msg, metadata, stackTrace, ...args }) {
+        this.show({ type: 'info', namespace, msg, metadata, stackTrace, args });
     }
 
     /**
@@ -207,8 +218,8 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    debug({ namespace, msg, metadata, stackTrace }) {
-        this.show({ type: 'debug', namespace, msg, metadata, stackTrace });
+    debug({ namespace, msg, metadata, stackTrace, ...args }) {
+        this.show({ type: 'debug', namespace, msg, metadata, stackTrace, args });
     }
 
     /**
