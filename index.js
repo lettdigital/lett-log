@@ -7,6 +7,7 @@ const SYSLOG_PORT = process.env.SYSLOG_PORT;
 const SYSLOG_FACILITY = process.env.SYSLOG_FACILITY;
 const SYSLOG_PATH = process.env.SYSLOG_PATH;
 const SYSLOG_APP_NAME = process.env.APP_NAME;
+const LOG_COLOR = process.env.LOG_COLOR;
 
 const { format } = require('winston');
 const { combine, label, printf, timestamp: timestampWinston, colorize } = format;
@@ -55,9 +56,16 @@ class Log {
     /**
      * @constructor
      */
-    constructor(defaultMeta = {}, { appName = '', host = '', protocol = '', port = 0, facility = '', path = '', timestamp = false } = {}) {
+    constructor(
+        defaultMeta = {},
+        { appName = '', host = '', protocol = '', port = 0, facility = '', path = '', timestamp = false, colors = true } = {},
+    ) {
         if (!appName && !SYSLOG_APP_NAME) {
             throw 'No appName or environment variable SYSLOG_APP_NAME defined';
+        }
+
+        if (LOG_COLOR) {
+            colors = LOG_COLOR;
         }
 
         winston.addColors(myCustomLevels.colors);
@@ -68,18 +76,18 @@ class Log {
             transports: [
                 new winston.transports.Console({
                     format: combine(
-                        colorize(),
+                        colors ? colorize() : printf(log => log),
                         timestampWinston(),
                         printf(({ message, timestamp: timestampFromWinston, level }) => {
                             const ts = timestampFromWinston.slice(0, 19).replace('T', ' ');
                             const log = JSON.parse(message);
 
-                            const backgroundWhite = '\x1b[47m';
-                            const foregroundBlack = '\x1b[30m';
-                            const foregroundMagenta = '\x1b[35m';
-                            const foregroundCyan = '\x1b[36m';
-                            const brightStyle = '\x1b[1m';
-                            const resetLogStyle = '\x1b[0m';
+                            const backgroundWhite = colors ? '\x1b[47m' : '';
+                            const foregroundBlack = colors ? '\x1b[30m' : '';
+                            const foregroundMagenta = colors ? '\x1b[35m' : '';
+                            const foregroundCyan = colors ? '\x1b[36m' : '';
+                            const brightStyle = colors ? '\x1b[1m' : '';
+                            const resetLogStyle = colors ? '\x1b[0m' : '';
 
                             return `${timestamp ? `[${ts}]` : ''}${brightStyle}[${level} @ ${log.namespace}]:${backgroundWhite}${foregroundBlack}${
                                 log.msg
