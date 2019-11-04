@@ -24,6 +24,8 @@ const log = new Log({
   facility: "",
   path: "",
   appName: "",
+  colors: true,
+  timestamp: false,
 });
 ```
 
@@ -37,6 +39,7 @@ const log = new Log({
   "SYSLOG_FACILITY": "",
   "SYSLOG_PATH": "",
   "APP_NAME": "",
+  "LOG_COLOR": ""
 }
 ```
 

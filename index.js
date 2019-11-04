@@ -42,15 +42,17 @@ const myCustomLevels = {
 /**
  * @class
  * @author Douglas Eleutério <douglaseleuterio@lett.digital>
- * @description A log class to send messagens to elastic log
- * @param {Object=} connection A connection object
- * @param {String} connection.host Host to send logs
- * @param {String} connection.appName An uniq name for app
- * @param {String} connection.protocol A protocol to send logs (UPD or TCP)
- * @param {Number} connection.port A port to connect
- * @param {String} connection.facility An user
+ * @description A log class to manage Console and Syslog transports
+ * @param {Object=} configuration A configuration object
+ * @param {String} configuration.host Host to send logs
+ * @param {String} configuration.appName An uniq name for app
+ * @param {String} configuration.protocol A protocol to send logs (UPD or TCP)
+ * @param {Number} configuration.port A port to connect
+ * @param {String} configuration.facility An user
  * @param {String} connection.path A path to write logs
- * @param {Object=} defaultMeta A default metadata to send on every log
+ * @param {String} [connection.timestamp=false] Toggle on/off timestamp
+ * @param {String} [connection.colors=true] Toggle on/off console.log colors
+ * @param {Object=} [defaultMeta={}] A default metadata to send on every log
  */
 class Log {
     /**

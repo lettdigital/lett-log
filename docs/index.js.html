@@ -35,6 +35,7 @@ const SYSLOG_PORT = process.env.SYSLOG_PORT;
 const SYSLOG_FACILITY = process.env.SYSLOG_FACILITY;
 const SYSLOG_PATH = process.env.SYSLOG_PATH;
 const SYSLOG_APP_NAME = process.env.APP_NAME;
+const LOG_COLOR = process.env.LOG_COLOR;
 
 const { format } = require('winston');
 const { combine, label, printf, timestamp: timestampWinston, colorize } = format;
@@ -46,9 +47,9 @@ const myFormat = printf(log => {
         .replace('T', ' ')
         .replace('.', ',');
     const logParsed = JSON.parse(log.message);
-    return `${isoDate}[${log.level.toUpperCase()}][${log.label}]:[MSG](${logParsed.namespace})${logParsed.msg} (ERROR)=${
-        logParsed.stackTrace
-    }[METADATA]${JSON.stringify(logParsed.metadata)}`;
+    return `${isoDate}[${log.level.toUpperCase()}][${log.label}]:[MSG](${logParsed.namespace})${logParsed.msg} (ARGS)=${JSON.stringify(
+        logParsed.args,
+    )}(ERROR)=${logParsed.stackTrace}[METADATA]${JSON.stringify(logParsed.metadata)}`;
 });
 
 const myCustomLevels = {
@@ -69,23 +70,32 @@ const myCustomLevels = {
 /**
  * @class
  * @author Douglas Eleutério &lt;douglaseleuterio@lett.digital>
- * @description A log class to send messagens to elastic log
- * @param {Object=} connection A connection object
- * @param {String} connection.host Host to send logs
- * @param {String} connection.appName An uniq name for app
- * @param {String} connection.protocol A protocol to send logs (UPD or TCP)
- * @param {Number} connection.port A port to connect
- * @param {String} connection.facility An user
+ * @description A log class to manage Console and Syslog transports
+ * @param {Object=} configuration A configuration object
+ * @param {String} configuration.host Host to send logs
+ * @param {String} configuration.appName An uniq name for app
+ * @param {String} configuration.protocol A protocol to send logs (UPD or TCP)
+ * @param {Number} configuration.port A port to connect
+ * @param {String} configuration.facility An user
  * @param {String} connection.path A path to write logs
- * @param {Object=} defaultMeta A default metadata to send on every log
+ * @param {String} [connection.timestamp=false] Toggle on/off timestamp
+ * @param {String} [connection.colors=true] Toggle on/off console.log colors
+ * @param {Object=} [defaultMeta={}] A default metadata to send on every log
  */
 class Log {
     /**
      * @constructor
      */
-    constructor(defaultMeta = {}, { appName = '', host = '', protocol = '', port = 0, facility = '', path = '', timestamp = false } = {}) {
+    constructor(
+        defaultMeta = {},
+        { appName = '', host = '', protocol = '', port = 0, facility = '', path = '', timestamp = false, colors = true } = {},
+    ) {
         if (!appName &amp;&amp; !SYSLOG_APP_NAME) {
             throw 'No appName or environment variable SYSLOG_APP_NAME defined';
+        }
+
+        if (LOG_COLOR) {
+            colors = LOG_COLOR;
         }
 
         winston.addColors(myCustomLevels.colors);
@@ -96,22 +106,33 @@ class Log {
             transports: [
                 new winston.transports.Console({
                     format: combine(
-                        colorize(),
+                        colors ? colorize() : printf(log => log),
                         timestampWinston(),
                         printf(({ message, timestamp: timestampFromWinston, level }) => {
                             const ts = timestampFromWinston.slice(0, 19).replace('T', ' ');
                             const log = JSON.parse(message);
 
-                            const backgroundWhite = '\x1b[47m';
-                            const foregroundBlack = '\x1b[30m';
-                            const foregroundMagenta = '\x1b[35m';
-                            const foregroundCyan = '\x1b[36m';
-                            const brightStyle = '\x1b[1m';
-                            const resetLogStyle = '\x1b[0m';
+                            const backgroundWhite = colors ? '\x1b[47m' : '';
+                            const foregroundBlack = colors ? '\x1b[30m' : '';
+                            const foregroundMagenta = colors ? '\x1b[35m' : '';
+                            const foregroundCyan = colors ? '\x1b[36m' : '';
+                            const brightStyle = colors ? '\x1b[1m' : '';
+                            const resetLogStyle = colors ? '\x1b[0m' : '';
 
                             return `${timestamp ? `[${ts}]` : ''}${brightStyle}[${level} @ ${log.namespace}]:${backgroundWhite}${foregroundBlack}${
                                 log.msg
                             }${resetLogStyle}${
+                                log.args &amp;&amp; Object.keys(log.args).length
+                                    ? Object.keys(log.args)
+                                          .map(
+                                              key =>
+                                                  `\n${foregroundCyan}(${key})${resetLogStyle}=${
+                                                      typeof log.args[key] === 'object' ? JSON.stringify(log.args[key], null, 2) : log.args[key]
+                                                  }`,
+                                          )
+                                          .join('')
+                                    : ''
+                            }${
                                 Object.keys(log.metadata).length
                                     ? `\n${foregroundCyan}[METADATA]${resetLogStyle}${JSON.stringify(log.metadata, null, 2)}`
                                     : ''
@@ -167,7 +188,7 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    static show({ namespace, type, msg, metadata = {}, stackTrace }) {
+    show({ namespace, type, msg, metadata = {}, stackTrace, args }) {
         if (!namespace) {
             throw 'namespace is a required argumment';
         }
@@ -188,7 +209,7 @@ class Log {
         const meta = {};
         Object.assign(meta, this.defaultMeta, metadata || {});
 
-        this.logger.log(type, JSON.stringify({ msg, namespace, metadata: meta, stackTrace: errEvent }));
+        this.logger.log(type, JSON.stringify({ msg, namespace, metadata: meta, stackTrace: errEvent, args }));
     }
 
     /**
@@ -199,8 +220,8 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    error({ namespace, msg, metadata, stackTrace }) {
-        this.show({ type: 'error', msg, namespace, metadata, stackTrace });
+    error({ namespace, msg, metadata, stackTrace, ...args }) {
+        this.show({ type: 'error', msg, namespace, metadata, stackTrace, args });
     }
 
     /**
@@ -211,8 +232,8 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    warn({ namespace, msg, metadata, stackTrace }) {
-        this.show({ type: 'warning', namespace, msg, metadata, stackTrace });
+    warn({ namespace, msg, metadata, stackTrace, ...args }) {
+        this.show({ type: 'warning', namespace, msg, metadata, stackTrace, args });
     }
 
     /**
@@ -223,8 +244,8 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    info({ namespace, msg, metadata, stackTrace }) {
-        this.show({ type: 'info', namespace, msg, metadata, stackTrace });
+    info({ namespace, msg, metadata, stackTrace, ...args }) {
+        this.show({ type: 'info', namespace, msg, metadata, stackTrace, args });
     }
 
     /**
@@ -235,8 +256,8 @@ class Log {
      * @param {Object=} metadata A JSON data with important information to find logs
      * @param {Error=} stackTrace An error stack
      */
-    debug({ namespace, msg, metadata, stackTrace }) {
-        this.show({ type: 'debug', namespace, msg, metadata, stackTrace });
+    debug({ namespace, msg, metadata, stackTrace, ...args }) {
+        this.show({ type: 'debug', namespace, msg, metadata, stackTrace, args });
     }
 
     /**
@@ -267,7 +288,7 @@ module.exports = Log;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Oct 18 2019 17:59:10 GMT-0300 (Brasilia Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Nov 04 2019 09:56:59 GMT-0200 (Brasilia Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>
