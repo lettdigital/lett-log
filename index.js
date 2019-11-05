@@ -67,7 +67,7 @@ class Log {
         }
 
         if (LOG_COLOR) {
-            colors = LOG_COLOR;
+            colors = LOG_COLOR === 'false' ? false : LOG_COLOR === 'true' && true;
         }
 
         winston.addColors(myCustomLevels.colors);
