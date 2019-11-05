@@ -10,4 +10,4 @@ log.warn({ namespace: 'WARNING', msg: 'There is a bug, no side effects', metadat
 log.info({ namespace: 'SERVER', msg: 'Just another important info', metadata: { express: 3.1 } });
 log.debug({ namespace: 'ENTRYPOINT', msg: 'Debugging app' });
 
-process.exit(1);
+process.exit(0);
