@@ -242,5 +242,4 @@ class Log {
         return JSON.stringify(err, Object.getOwnPropertyNames(err));
     }
 }
-
 module.exports = Log;
