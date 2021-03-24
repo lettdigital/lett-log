@@ -3,6 +3,7 @@
   "version": "2.2.1",
   "description": "A simple library to manage logs using winston",
   "main": "index.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "jsdoc": "./node_modules/.bin/jsdoc -c jsdoc.json",
     "test": "node test.js"
