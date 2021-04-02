@@ -45,6 +45,8 @@ const log = new Log({
 
 ## How to use
 
+> The `appName` or `APP_NAME` should be a UPPERCASE string.
+
 ### Log level
 
 There are 4 log levels:
