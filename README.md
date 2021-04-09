@@ -45,7 +45,7 @@ const log = new Log({
 
 ## How to use
 
-> The `appName` or `APP_NAME` should be a UPPERCASE string.
+> The `appName` or `APP_NAME` should be a CONSTANT_CASE string.
 
 ### Log level
 
