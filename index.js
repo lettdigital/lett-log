@@ -19,9 +19,12 @@ const myFormat = printf(log => {
         .replace('T', ' ')
         .replace('.', ',');
     const logParsed = JSON.parse(log.message);
-    return `${isoDate}[${log.level.toUpperCase()}][${log.label}]:[MSG](${logParsed.namespace})${logParsed.msg} (ARGS)=${JSON.stringify(
-        logParsed.args,
-    )}(ERROR)=${logParsed.stackTrace}[METADATA]${JSON.stringify(logParsed.metadata)}`;
+    const args = logParsed.args ? `(ARGS)=${JSON.stringify(logParsed.args)}` : '';
+    const error = logParsed.stackTrace ? `(ERROR)=${logParsed.stackTrace}` : '';
+
+    return `${isoDate}[${log.level.toUpperCase()}][${log.label}]:[MSG](${logParsed.namespace})${
+        logParsed.msg
+    } ${args}${error}[METADATA]${JSON.stringify(logParsed.metadata)}`;
 });
 
 const myCustomLevels = {
