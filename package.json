@@ -1,6 +1,6 @@
 {
   "name": "lett-log",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "A simple library to manage logs using winston",
   "main": "index.js",
   "types": "types/index.d.ts",
@@ -14,9 +14,9 @@
   "author": "Douglas Eleuterio",
   "license": "ISC",
   "devDependencies": {
-    "eslint": "^5.14.1",
+    "eslint": "^8.8.0",
     "eslint-plugin-prettier": "^3.0.1",
-    "jsdoc": "^3.5.5",
+    "jsdoc": "^3.6.10",
     "prettier": "1.16.4"
   },
   "dependencies": {
