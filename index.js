@@ -81,7 +81,7 @@ class Log {
             transports: [
                 new winston.transports.Console({
                     format: combine(
-                        colors ? colorize() : printf(log => log),
+                        colorize(),
                         timestampWinston(),
                         printf(({ message, timestamp: timestampFromWinston, level }) => {
                             const ts = timestampFromWinston.slice(0, 19).replace('T', ' ');

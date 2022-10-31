@@ -14,8 +14,8 @@ export interface LogParams {
   namespace: string
   msg: string
   metadata: Record<string, unknown>
-  stackTrace: Error
-  args: Record<string, unknown>
+  stackTrace?: Error
+  args?: Record<string, unknown>
 }
 
 export type GenericMeta = Record<string, unknown>
