@@ -8,7 +8,6 @@ const SYSLOG_FACILITY = process.env.SYSLOG_FACILITY;
 const SYSLOG_PATH = process.env.SYSLOG_PATH;
 const SYSLOG_APP_NAME = process.env.APP_NAME;
 const LOG_COLOR = process.env.LOG_COLOR;
-const RAW_JSON_LOGS = process.env.RAW_JSON_LOGS;
 
 const { format } = require('winston');
 const { combine, label, printf, timestamp: timestampWinston, colorize } = format;
@@ -76,7 +75,7 @@ class Log {
      */
     constructor(
         defaultMeta = {},
-        { appName = '', host = '', protocol = '', port = 0, facility = '', path = '', timestamp = false, colors = true, rawJsonLogs = false } = {},
+        { appName = '', host = '', protocol = '', port = 0, facility = '', path = '', timestamp = false, colors = true, logFormat = process.env.LOG_FORMAT || 'custom' } = {},
     ) {
         if (!appName && !SYSLOG_APP_NAME) {
             throw 'No appName or environment variable SYSLOG_APP_NAME defined';
@@ -84,10 +83,6 @@ class Log {
 
         if (LOG_COLOR) {
             colors = LOG_COLOR === 'false' ? false : LOG_COLOR === 'true' && true;
-        }
-
-        if (RAW_JSON_LOGS) {
-            rawJsonLogs = RAW_JSON_LOGS === 'true';
         }
 
         const prettyPrintFormat = combine(
@@ -129,10 +124,10 @@ class Log {
         this.logger = winston.createLogger({
             levels: myCustomLevels.levels,
             level: 'debug',
-            format: combine(label({ label: appName || SYSLOG_APP_NAME }), rawJsonLogs ? rawJsonFormat : myFormat),
+            format: combine(label({ label: appName || SYSLOG_APP_NAME }), myFormat),
             transports: [
                 new winston.transports.Console({
-                    format: rawJsonLogs ? rawJsonFormat : prettyPrintFormat,
+                    format: logFormat === 'json' ? rawJsonFormat : prettyPrintFormat,
                 }),
                 new winston.transports.Syslog({
                     host: host || SYSLOG_HOST,
