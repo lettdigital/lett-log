@@ -27,6 +27,19 @@ const myFormat = printf(log => {
     } ${args}${error}[METADATA]${JSON.stringify(logParsed.metadata)}`;
 });
 
+const rawJsonFormat = combine(
+    timestampWinston(),
+    format.json(),
+    printf(({ level, timestamp, message, label }) => {
+        return JSON.stringify({
+            ...JSON.parse(message),
+            level,
+            timestamp,
+            application: label
+        });
+    }),
+);
+
 const myCustomLevels = {
     levels: {
         error: 0,
@@ -63,7 +76,7 @@ class Log {
      */
     constructor(
         defaultMeta = {},
-        { appName = '', host = '', protocol = '', port = 0, facility = '', path = '', timestamp = false, colors = true } = {},
+        { appName = '', host = '', protocol = '', port = 0, facility = '', path = '', timestamp = false, colors = true, logFormat = process.env.LOG_FORMAT || 'custom' } = {},
     ) {
         if (!appName && !SYSLOG_APP_NAME) {
             throw 'No appName or environment variable SYSLOG_APP_NAME defined';
@@ -73,47 +86,49 @@ class Log {
             colors = LOG_COLOR === 'false' ? false : LOG_COLOR === 'true' && true;
         }
 
+        const prettyPrintFormat = combine(
+            colors ? colorize() : printf(log => log),
+            timestampWinston(),
+            printf(({ message, timestamp: timestampFromWinston, level }) => {
+                const ts = timestampFromWinston.slice(0, 19).replace('T', ' ');
+                const log = JSON.parse(message);
+
+                const backgroundWhite = colors ? '\x1b[47m' : '';
+                const foregroundBlack = colors ? '\x1b[30m' : '';
+                const foregroundMagenta = colors ? '\x1b[35m' : '';
+                const foregroundCyan = colors ? '\x1b[36m' : '';
+                const brightStyle = colors ? '\x1b[1m' : '';
+                const resetLogStyle = colors ? '\x1b[0m' : '';
+
+                return `${timestamp ? `[${ts}]` : ''}${brightStyle}[${level} @ ${log.namespace}]:${backgroundWhite}${foregroundBlack}${
+                    log.msg
+                }${resetLogStyle}${
+                    log.args && Object.keys(log.args).length
+                        ? Object.keys(log.args)
+                              .map(
+                                  key =>
+                                      `\n${foregroundCyan}(${key})${resetLogStyle}=${
+                                          typeof log.args[key] === 'object' ? JSON.stringify(log.args[key], null, 2) : log.args[key]
+                                      }`,
+                              )
+                              .join('')
+                        : ''
+                }${
+                    Object.keys(log.metadata).length
+                        ? `\n${foregroundCyan}[METADATA]${resetLogStyle}${JSON.stringify(log.metadata, null, 2)}`
+                        : ''
+                }${log.stackTrace ? `\n${foregroundMagenta}[STACKTRACE]${resetLogStyle}${log.stackTrace}` : ''}`;
+            }),
+        );
+
         winston.addColors(myCustomLevels.colors);
         this.logger = winston.createLogger({
             levels: myCustomLevels.levels,
-            level: 'debug',
+            level: process.env.LOG_LEVEL in myCustomLevels.levels ? process.env.LOG_LEVEL : 'debug',
             format: combine(label({ label: appName || SYSLOG_APP_NAME }), myFormat),
             transports: [
                 new winston.transports.Console({
-                    format: combine(
-                        colors ? colorize() : printf(log => log),
-                        timestampWinston(),
-                        printf(({ message, timestamp: timestampFromWinston, level }) => {
-                            const ts = timestampFromWinston.slice(0, 19).replace('T', ' ');
-                            const log = JSON.parse(message);
-
-                            const backgroundWhite = colors ? '\x1b[47m' : '';
-                            const foregroundBlack = colors ? '\x1b[30m' : '';
-                            const foregroundMagenta = colors ? '\x1b[35m' : '';
-                            const foregroundCyan = colors ? '\x1b[36m' : '';
-                            const brightStyle = colors ? '\x1b[1m' : '';
-                            const resetLogStyle = colors ? '\x1b[0m' : '';
-
-                            return `${timestamp ? `[${ts}]` : ''}${brightStyle}[${level} @ ${log.namespace}]:${backgroundWhite}${foregroundBlack}${
-                                log.msg
-                            }${resetLogStyle}${
-                                log.args && Object.keys(log.args).length
-                                    ? Object.keys(log.args)
-                                          .map(
-                                              key =>
-                                                  `\n${foregroundCyan}(${key})${resetLogStyle}=${
-                                                      typeof log.args[key] === 'object' ? JSON.stringify(log.args[key], null, 2) : log.args[key]
-                                                  }`,
-                                          )
-                                          .join('')
-                                    : ''
-                            }${
-                                Object.keys(log.metadata).length
-                                    ? `\n${foregroundCyan}[METADATA]${resetLogStyle}${JSON.stringify(log.metadata, null, 2)}`
-                                    : ''
-                            }${log.stackTrace ? `\n${foregroundMagenta}[STACKTRACE]${resetLogStyle}${log.stackTrace}` : ''}`;
-                        }),
-                    ),
+                    format: logFormat === 'json' ? rawJsonFormat : prettyPrintFormat,
                 }),
                 new winston.transports.Syslog({
                     host: host || SYSLOG_HOST,
