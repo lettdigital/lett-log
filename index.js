@@ -29,6 +29,7 @@ const myFormat = printf(log => {
 
 const rawJsonFormat = combine(
     timestampWinston(),
+    format.json(),
     printf(({ level, timestamp, message, label }) => {
         return JSON.stringify({
             ...JSON.parse(message),
@@ -123,7 +124,7 @@ class Log {
         winston.addColors(myCustomLevels.colors);
         this.logger = winston.createLogger({
             levels: myCustomLevels.levels,
-            level: 'debug',
+            level: process.env.LOG_LEVEL in myCustomLevels.levels ? process.env.LOG_LEVEL : 'debug',
             format: combine(label({ label: appName || SYSLOG_APP_NAME }), myFormat),
             transports: [
                 new winston.transports.Console({
